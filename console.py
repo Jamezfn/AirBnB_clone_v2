@@ -115,50 +115,61 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
-        try:
-            class_name, *params = args.split()
-        except IndexError
-            pass
-        if not class_name:
+        arg_list = args.split()
+        if len(arg_list) == 0:
             print("** class name missing **")
             return
-        elseif class_name not in HBNBCommand.classes:
+
+        class_name = arg_list[0]
+        if class_name not in HBNBCommand.classes:
             print(f"** class '{class_name}' doesn't exist **")
             return
-        #create Place city_id="0001" user_id="0001" name="My_little_house"
+
+        params = arg_list[1:]
+        params = [x.split('=') for x in params if '=' in x]
+        params = [x for x in params if len(x) == 2 and '' not in x]
+
+        for val in params:
+            if val[1].isdigit():
+                val[1] = int(val[1])
+            else:
+                try:
+                    val[1] = float(val[1])
+                except ValueError:
+                    pass
+
+        newlist = []
+        for each in params:
+            if each[0][0] != '\"' and each[0][-1] != '\"':
+                if isinstance(each[1], (float, int)):
+                    newlist.append(each)
+                elif isinstance(each[1], str):
+                    if each[1][0] == '\"' and each[1][-1] == '\"':
+                        each[1] = each[1][1:-1]
+                        newlist.append(each)
+
         try:
-            new_instance =HBNBCommand.classes[class_name]()
+            new_instance = HBNBCommand.classes[class_name]()
         except Exception as e:
             print(f"** Error: Failed to create object of the class '{class_name}': {e}")
             return
 
-        for param in params:
-            key,value = param.split("=")
-
-            if value.startwith('"') and value.endwith('"'):
-                value = value[1:-1].replace('\\"', '"').replace("_", " ")
+        for attrs in newlist:
+            if isinstance(attrs[1], str):
+                attrs[1] = attrs[1].replace('_', ' ')
+                attrs[1] = attrs[1].replace('\\"', '"')
+            if hasattr(new_instance, attrs[0]):
+                setattr(new_instance, attrs[0], attrs[1])
             else:
-                try:
-                    value = int(value)
-                except ValueError:
-                    try:
-                        value = float(value)
-                    except ValueError:
-                        pass
+                print(f"** Warning: '{attrs[0]}' is not a valid attribute for '{class_name}' class")
 
-            if hasattr(new_instance, key):
-                setattr(new_instance, key, value)
-            else:
-                print(f"** Warning: '{key}' is not a valid attribute for '{class_name}' class")
+        try:
+            storage.new(new_instance)
+            new_instance.save()
+            print(f"{new_instance.__class__.__name__} ({new_instance.id}) created")
+        except Exception as e:
+            print(f"** Error: Failed to save object: {e}")
 
-        except ValueError:
-            print(f"** Warning: Invalid parameter format: '{param}'")
-    try:
-        storage.new(new_instance)
-        new_instance.save()
-        print(f"{new_instance.__class__.__name__} ({new_instance.id}) created")
-    except Exception as e:
-        print(f"** Error: Failed to save object: {e}")
 
     def help_create(self):
         """ Help information for the create method """
