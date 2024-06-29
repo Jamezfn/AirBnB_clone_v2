@@ -116,36 +116,49 @@ class HBNBCommand(cmd.Cmd):
     def do_create(self, args):
         """ Create an object of any class"""
         try:
-            class_name = args.split(" ")[0]
+            class_name, *params = args.split()
         except IndexError
             pass
         if not class_name:
             print("** class name missing **")
             return
         elseif class_name not in HBNBCommand.classes:
-            print("** class doesn't exist **")
+            print(f"** class '{class_name}' doesn't exist **")
             return
         #create Place city_id="0001" user_id="0001" name="My_little_house"
-        all_list = args.split(" ")
+        try:
+            new_instance =HBNBCommand.classes[class_name]()
+        except Exception as e:
+            print(f"** Error: Failed to create object of the class '{class_name}': {e}")
+            return
 
-        new_instance = eval(class_name)()
+        for param in params:
+            key,value = param.split("=")
 
-        for i in range(1, len(all_list)):
-            key,value = tuple(all_list[i].split("="))
-            if value.startwith('"'):
-                value = value.strip('"').replace("_", " ")
+            if value.startwith('"') and value.endwith('"'):
+                value = value[1:-1].replace('\\"', '"').replace("_", " ")
             else:
                 try:
-                    value = eval(value)
-                except Exception:
-                    print(f"** couldn't evaluate {value}")
-                    pass
-            if hasattr(new_instance, key, value):
-                setattr(new_instance, key, value)
+                    value = int(value)
+                except ValueError:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
 
+            if hasattr(new_instance, key):
+                setattr(new_instance, key, value)
+            else:
+                print(f"** Warning: '{key}' is not a valid attribute for '{class_name}' class")
+
+        except ValueError:
+            print(f"** Warning: Invalid parameter format: '{param}'")
+    try:
         storage.new(new_instance)
-        print(new_instance.id)
         new_instance.save()
+        print(f"{new_instance.__class__.__name__} ({new_instance.id}) created")
+    except Exception as e:
+        print(f"** Error: Failed to save object: {e}")
 
     def help_create(self):
         """ Help information for the create method """
