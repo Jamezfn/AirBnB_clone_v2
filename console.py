@@ -115,60 +115,35 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
-        arg_list = args.split()
-        if len(arg_list) == 0:
+        try:
+            if not line:
+                raise SyntaxError()
+            my_list = line.split(" ")
+
+            kwargs = {}
+            for i in range(1, len(my_list)):
+                key, value = tuple(my_list[i].split("="))
+                if value[0] == '"':
+                    value = value.strip('"').replace("_", " ")
+                else:
+                    try:
+                        value = eval(value)
+                    except (SyntaxError, NameError):
+                        continue
+                kwargs[key] = value
+
+            if kwargs == {}:
+                obj = eval(my_list[0])()
+            else:
+                obj = eval(my_list[0])(**kwargs)
+                storage.new(obj)
+            print(obj.id)
+            obj.save()
+
+        except SyntaxError:
             print("** class name missing **")
-            return
-
-        class_name = arg_list[0]
-        if class_name not in HBNBCommand.classes:
-            print(f"** class '{class_name}' doesn't exist **")
-            return
-
-        params = arg_list[1:]
-        params = [x.split('=') for x in params if '=' in x]
-        params = [x for x in params if len(x) == 2 and '' not in x]
-
-        for val in params:
-            if val[1].isdigit():
-                val[1] = int(val[1])
-            else:
-                try:
-                    val[1] = float(val[1])
-                except ValueError:
-                    pass
-
-        newlist = []
-        for each in params:
-            if each[0][0] != '\"' and each[0][-1] != '\"':
-                if isinstance(each[1], (float, int)):
-                    newlist.append(each)
-                elif isinstance(each[1], str):
-                    if each[1][0] == '\"' and each[1][-1] == '\"':
-                        each[1] = each[1][1:-1]
-                        newlist.append(each)
-
-        try:
-            new_instance = HBNBCommand.classes[class_name]()
-        except Exception as e:
-            print(f"** Error: Failed to create object of the class '{class_name}': {e}")
-            return
-
-        for attrs in newlist:
-            if isinstance(attrs[1], str):
-                attrs[1] = attrs[1].replace('_', ' ')
-                attrs[1] = attrs[1].replace('\\"', '"')
-            if hasattr(new_instance, attrs[0]):
-                setattr(new_instance, attrs[0], attrs[1])
-            else:
-                print(f"** Warning: '{attrs[0]}' is not a valid attribute for '{class_name}' class")
-
-        try:
-            storage.new(new_instance)
-            new_instance.save()
-            print(f"{new_instance.__class__.__name__} ({new_instance.id}) created")
-        except Exception as e:
-            print(f"** Error: Failed to save object: {e}")
+        except NameError:
+            print("** class doesn't exist **")
 
 
     def help_create(self):
