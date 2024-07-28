@@ -8,7 +8,8 @@ app = Flask(__name__)
 @app.route('/', strict_slashes=False)
 def hello_hbnb():
     """ a function that prints hello `hbnb at the root"""
-    return "Hello HBNB!"
+    name = request.args.get("name", "World")
+    return f'Hello, {escape(name)}!'
 
 
 if __name__ == "__main__":
