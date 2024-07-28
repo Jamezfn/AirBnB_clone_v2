@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from models.base_model import Base
 from models.state import State
 from models.city import City
+from sqlalchemy.orm.session import Session
 
 
 class DBstorage:
@@ -69,3 +70,7 @@ class DBstorage:
                                        expire_on_commit=False)
         Session = scoped_session(session_factory)
         self.__session = Session()
+
+    def close(self):
+        """Remove the current SQLAlchemy session."""
+        self.__session.remove()
