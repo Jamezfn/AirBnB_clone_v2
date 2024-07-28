@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""script that starts a Flask web application"""
+"""a script that starts a flask web application"""
 from flask import Flask
 
 app = Flask(__name__)
@@ -7,19 +7,20 @@ app = Flask(__name__)
 
 @app.route('/', strict_slashes=False)
 def hello_hbnb():
-    """Display 'Hello HBNB!' at the root route."""
+    """a function that prints hello `hbnb at the root"""
     return "Hello HBNB!"
 
 
-@app.route('/', strict_slashes=False)
+@app.route('/hbnb', strict_slashes=False)
 def hbnb():
-    """Display 'HBNB' at the root route."""
+    """Display HBNB at /hbnb"""
     return "HBNB"
+
 
 @app.route('/c/<text>', strict_slashes=False)
 def c(text):
-    """Display “C ” followed by the value of the text variable
-    (replace underscore _ symbols with a space )"""
+    """display “C ” followed by the value of the text variable
+    (replace underscore _ symbols with a space"""
     text = text.replace("_", " ")
     return "C {}".format(text)
 
