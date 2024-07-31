@@ -6,7 +6,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String
 import models
 from models.city import City
-import shlex
 
 
 class State(BaseModel, Base):
@@ -21,15 +20,5 @@ class State(BaseModel, Base):
 
     @property
     def cities(self):
-        var = models.storage.all()
-        lista = []
-        result = []
-        for key in var:
-            city = key.replace('.', ' ')
-            city = shlex.split(city)
-            if (city[0] == 'City'):
-                lista.append(var[key])
-        for elem in lista:
-            if (elem.state_id == self.id):
-                result.append(elem)
-        return (result)
+        """Returns the list of cities belonging to this state"""
+        return [city for city in models.storage.all(City).values() if city.state_id == self.id]
