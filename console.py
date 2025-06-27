@@ -139,8 +139,8 @@ class HBNBCommand(cmd.Cmd):
             if not key or not value:
                 continue
 
-            if value.startswith('"') and endswith('"'):
-                value.value[1:-1].replace('\\', '"').replace('_', ' ')
+            if value.startswith('"') and value.endswith('"'):
+                value.value[1:-1].replace('_', ' ').replace('\\', '"')
                 setattr(new_instance, key, value)
             elif '.' in value and value.replace('-', '').replace('.', '').isdigit():
                 try:
@@ -195,7 +195,7 @@ class HBNBCommand(cmd.Cmd):
     def help_show(self):
         """ Help information for the show command """
         print("Shows an individual instance of a class")
-        print("[Usage]: show <className> <objectId>\n")
+        print("[Usage]: show  <objectId>\n")
 
     def do_destroy(self, args):
         """ Destroys a specified object """
