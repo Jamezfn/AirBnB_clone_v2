@@ -9,13 +9,12 @@ class BaseModel:
     def __init__(self, *args, **kwargs):
         """Instantiates a new model"""
         if kwargs:
-            valid_keys = {'id', 'created_at', 'updated_at', '__class__'}
             for key, value in kwargs.items():
-                if key not in valid_keys:
-                    raise KeyError(f"Invalid key: {key}")
                 if key in ['created_at', 'updated_at']:
                     setattr(self, key, datetime.fromisoformat(value))
-                elif key != '__class__':
+                elif key == '__class__':
+                    continue
+                else:
                     setattr(self, key, value)
             self.id = getattr(self, 'id', str(uuid.uuid4()))
             self.created_at = getattr(self, 'created_at', datetime.now())
