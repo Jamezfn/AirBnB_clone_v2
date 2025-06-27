@@ -2,6 +2,8 @@
 """ Console Module """
 import cmd
 import sys
+import ast
+import shlex
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -73,9 +75,13 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] is '{' and pline[-1] is'}'\
-                            and type(eval(pline)) is dict:
-                        _args = pline
+                    if pline.startswith('{') and pline.endswith('}'):
+                        try:
+                            parsed = ast.literal_eval(pline)
+                            if isintance(parsed, dict):
+                                _args = pline
+                        except (ValueError, SyntaxError):
+                            pass
                     else:
                         _args = pline.replace(',', '')
                         # _args = _args.replace('\"', '')
@@ -118,11 +124,38 @@ class HBNBCommand(cmd.Cmd):
         if not args:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
+
+        args_list = shlex.split(args)
+        cls_name = args_list[0]
+        if cls_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
+        new_instance = HBNBCommand.classes[cls_name]()
+        for param in args_list[1:]:
+            if '=' not in param:
+                continue
+
+            key, value = param.split('=', 1)
+            if not key or not value:
+                continue
+
+            if value.startswith('"') and endswith('"'):
+                value.value[1:-1].replace('\\', '"').replace('_', ' ')
+                setattr(new_instance, key, value)
+            elif '.' in value and value.replace('-', '').replace('.', '').isdigit():
+                try:
+                    setattr(new_instance, key, float(value))
+                except ValueError:
+                    continue
+            elif value.replace('-', '').isdigit():
+                try:
+                    setattr(new_instance, key, int(value))
+                except ValueError:
+                    continue
+            else:
+                continue
+
+        new_instance.save()
         print(new_instance.id)
         storage.save()
 
@@ -271,19 +304,19 @@ class HBNBCommand(cmd.Cmd):
                 args.append(k)
                 args.append(v)
         else:  # isolate args
-            args = args[2]
-            if args and args[0] is '\"':  # check for quoted arg
+            args = args[2:]
+            if args and args[0] == '\"':  # check for quoted arg
                 second_quote = args.find('\"', 1)
                 att_name = args[1:second_quote]
                 args = args[second_quote + 1:]
 
-            args = args.partition(' ')
+            _,_, args = args.partition(' ')
 
             # if att_name was not quoted arg
-            if not att_name and args[0] is not ' ':
+            if not att_name and args and args[0] != ' ':
                 att_name = args[0]
             # check for quoted val arg
-            if args[2] and args[2][0] is '\"':
+            if args[2] and args[2][0] == '\"':
                 att_val = args[2][1:args[2].find('\"', 1)]
 
             # if att_val was not quoted arg
