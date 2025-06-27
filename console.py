@@ -165,31 +165,28 @@ class HBNBCommand(cmd.Cmd):
 
     def do_show(self, args):
         """ Method to show an individual object """
-        new = args.partition(" ")
-        c_name = new[0]
-        c_id = new[2]
-
-        # guard against trailing args
-        if c_id and ' ' in c_id:
-            c_id = c_id.partition(' ')[0]
-
-        if not c_name:
+        args =shlex.split(args)
+        if len(args) == 0:
             print("** class name missing **")
             return
-
-        if c_name not in HBNBCommand.classes:
+        cls_name = args[0]
+        if cls_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
 
-        if not c_id:
+        if len(args) == 1:
             print("** instance id missing **")
             return
 
-        key = c_name + "." + c_id
-        try:
-            print(storage._FileStorage__objects[key])
-        except KeyError:
+        obj_id =args[1]
+        key = f"{cls_name}.{obj_id}"
+
+        all_objs = storage.all()
+        obj = all_obj.get(key, None)
+        if not obj:
             print("** no instance found **")
+        else:
+            print(obj)
 
     def help_show(self):
         """ Help information for the show command """
