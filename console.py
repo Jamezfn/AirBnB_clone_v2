@@ -3,7 +3,7 @@
 import cmd
 import sys
 import ast
-import shlex
+import re
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -125,38 +125,28 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
 
-        args_list = shlex.split(args)
-        cls_name = args_list[0]
+        parts = args.split(None, 1)
+        cls_name = parts[0]
         if cls_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[cls_name]()
-        for param in args_list[1:]:
-            if '=' not in param:
-                continue
+        params = {}
+        if len(parts) ==2:
+            for key, val in re.findall(r'(\w+)=(".*?"|\S+)', parts[1]):
+                if val[0] == val[-1] == '"':
+                    v = val[1:-1].replace('_', ' ').replace('\\"', '"')
+                else:
+                    if re.fullmatch(r'-?\d+', val):
+                        v = int(val)
+                    else:
+                        v = float(val)
+                params[key] = v
+            new_instance = HBNBCommand.classes[cls_name]()
+            for k, v in params.items():
+                setattr(new_instance, k, v)
 
-            key, value = param.split('=', 1)
-            if not key or not value:
-                continue
-
-            if value.startswith('"') and value.endswith('"'):
-                value.value[1:-1].replace('_', ' ').replace('\\', '"')
-                setattr(new_instance, key, value)
-            elif '.' in value and value.replace('-', '').replace('.', '').isdigit():
-                try:
-                    setattr(new_instance, key, float(value))
-                except ValueError:
-                    continue
-            elif value.replace('-', '').isdigit():
-                try:
-                    setattr(new_instance, key, int(value))
-                except ValueError:
-                    continue
-            else:
-                continue
-
-        new_instance.save()
-        print(new_instance.id)
+            new_instance.save()
+            print(new_instance.id)
 
     def help_create(self):
         """ Help information for the create method """
@@ -241,8 +231,7 @@ class HBNBCommand(cmd.Cmd):
         else:
             for k, v in storage._FileStorage__objects.items():
                 print_list.append(str(v))
-
-        print(print_list)
+        print(f"[{', '.join(print_list)}]")
 
     def help_all(self):
         """ Help information for the all command """
