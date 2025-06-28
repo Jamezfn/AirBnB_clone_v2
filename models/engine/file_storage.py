@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
+import os
 from models.base_model import BaseModel
 from models.user import User
 from models.place import Place
@@ -25,6 +26,7 @@ class FileStorage:
 
     def save(self):
         """Saves storage dictionary to file"""
+        os.makedirs(os.path.dirname(FileStorage.__file_path) or '.', exist_ok=True)
         with open(FileStorage.__file_path, 'w') as f:
             temp = {}
             temp.update(FileStorage.__objects)
