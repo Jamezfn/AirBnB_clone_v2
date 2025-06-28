@@ -182,7 +182,7 @@ class HBNBCommand(cmd.Cmd):
         key = f"{cls_name}.{obj_id}"
 
         all_objs = storage.all()
-        obj = all_obj.get(key, None)
+        obj = all_objs.get(key)
         if not obj:
             print("** no instance found **")
         else:
