@@ -1,23 +1,18 @@
-#!/usr/bin/python3
-""" State Module for HBNB project """
-from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
+from models.base_model import BaseModel, Base
 import models
 from models.city import City
 
-class State(BaseModel):
-    """ State class """
+class State(BaseModel, Base):
     __tablename__ = 'states'
     name = Column(String(128), nullable=False)
-    cities = relationship("City", backref="state", cascade="all, delete")
+    cities = relationship("City", back_populates="state", cascade="all, delete")
 
     @property
-    def cities(self):
-        """Getter attribute for cities in FileStorage"""
+    def cities_list(self):
         city_list = []
-        all_city = models.storage.all(City)
-        for city in all_city.values:
+        for city in models.storage.all("City").values():
             if city.state_id == self.id:
                 city_list.append(city)
         return city_list
