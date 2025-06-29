@@ -3,6 +3,7 @@
 from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String, ForeignKey, Integer, Float
 from sqlalchemy.orm import relationship
+import models
 
 class Place(BaseModel, Base):
     """ A place to stay """
@@ -19,3 +20,14 @@ class Place(BaseModel, Base):
     longitude = Column(Float, nullable=True)
     user = relationship("User", back_populates="places")
     city = relationship("City", back_populates="places")
+    reviews = relationship("Review", back_populates="place", cascade="all, delete")
+
+    @property
+    def review(self):
+        """Getter attribute for reviews in FileStorage"""
+        review_list = []
+        review_objs = models.storage.all(Review)
+        for review in review_objs.values():
+            if  review.place_id == self.id:
+                review_list.append(review)
+        return review_list
