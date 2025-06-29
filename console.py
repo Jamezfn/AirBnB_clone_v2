@@ -149,7 +149,9 @@ class HBNBCommand(cmd.Cmd):
             kwargs[key] = value
 
         obj = cls(**kwargs)
-        obj.save()
+        storage.new(obj)
+        storage.save()
+        print(obj.id)
 
     def help_create(self):
         """ Help information for the create method """
