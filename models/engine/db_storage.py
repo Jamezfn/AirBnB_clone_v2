@@ -75,7 +75,8 @@ class DBStorage:
                 bind=self.__engine,
                 expire_on_commit=False
                 )
-        self.__session = scoped_session(session_factory)
+        Session = scoped_session(session_factory)
+        self.__session = Session()
 
     def close():
         """Remove scoped session (call when tearing down)."""
