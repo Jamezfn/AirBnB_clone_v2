@@ -119,34 +119,37 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, args):
+    def do_create(self, line):
         """ Create an object of any class"""
-        if not args:
+        if not line:
             print("** class name missing **")
             return
 
-        parts = args.split(None, 1)
-        cls_name = parts[0]
-        if cls_name not in HBNBCommand.classes:
+        line = shlex.split(line)
+        class_name = line[0]
+        try:
+            cls = globals()[class_name]
+        except KeyError:
             print("** class doesn't exist **")
             return
-        params = {}
-        if len(parts) ==2:
-            for key, val in re.findall(r'(\w+)=(".*?"|\S+)', parts[1]):
-                if val[0] == val[-1] == '"':
-                    v = val[1:-1].replace('_', ' ').replace('\\"', '"')
-                else:
-                    if re.fullmatch(r'-?\d+', val):
-                        v = int(val)
-                    else:
-                        v = float(val)
-                params[key] = v
-            new_instance = HBNBCommand.classes[cls_name]()
-            for k, v in params.items():
-                setattr(new_instance, k, v)
+        kwargs = {}
+        for arg in  args[1:]:
+            key, value = arg.split('=', 1)
+            if value.startswith('"') and value.endswith('"'):
+                value = value.strip('"').replace('_', ' ')
+            else:
+                try:
+                    if value.isdigit():
+                        value = int(value)
+                except ValueError:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
+            kwargs[key] = value
 
-            new_instance.save()
-            print(new_instance.id)
+        obj = cls(**kwargs)
+        obj.save()
 
     def help_create(self):
         """ Help information for the create method """
