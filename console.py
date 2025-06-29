@@ -3,7 +3,7 @@
 import cmd
 import sys
 import ast
-import re
+import shlex
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -125,8 +125,8 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
 
-        line = shlex.split(line)
-        class_name = line[0]
+        args = shlex.split(line)
+        class_name = args[0]
         try:
             cls = globals()[class_name]
         except KeyError:
@@ -148,7 +148,9 @@ class HBNBCommand(cmd.Cmd):
                         pass
             kwargs[key] = value
 
-        obj = cls(**kwargs)
+        obj = cls()
+        for k, v in kwargs.items():
+            setattr(obj, k, v)
         storage.new(obj)
         storage.save()
         print(obj.id)
