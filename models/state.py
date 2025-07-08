@@ -11,8 +11,10 @@ class State(BaseModel, Base):
 
     @property
     def cities_list(self):
-        city_list = []
-        for city in models.storage.all("City").values():
-            if city.state_id == self.id:
-                city_list.append(city)
-        return city_list
+        if os.getenv('HBNB_TYPE_STORAGE') != 'db':
+            city_list = []
+            for city in models.storage.all("City").values():
+                if city.state_id == self.id:
+                    city_list.append(city)
+            return city_list
+        return self.cities
