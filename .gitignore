@@ -1,0 +1,16 @@
+# .gitignore
+
+# Python virtual environment
+venv/
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Other common ignores
+*.log
+*.swp
+*.swo
+.DS_Store
